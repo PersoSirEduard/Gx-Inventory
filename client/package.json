@@ -1,11 +1,11 @@
 {
   "name": "gx-inventory",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public --no-clear"
+    "start": "sirv public --no-clear --port 3001 --host"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

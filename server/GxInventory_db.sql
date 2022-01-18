@@ -10,7 +10,7 @@ alter default privileges grant all on sequences to gxinventory;
 
 create table equipment_types(
     id serial primary key not null,
-    equipment_name varchar(20) unique not null,
+    equipment_type_name varchar(20) unique not null,
     equipment_type_description varchar(100)
 );
 
@@ -30,7 +30,7 @@ create table agents(
     id serial primary key not null,
     agent_firstname varchar(20) not null, -- Firstname of the agent
     agent_lastname varchar(20) not null, -- Lastname of the agent
-    agent_email varchar(30)-- Email of the agent
+    agent_email varchar(30) -- Email of the agent
 );
 
 alter table equipments add constraint fk_agent_id foreign key (agent_id) references agents(id);
