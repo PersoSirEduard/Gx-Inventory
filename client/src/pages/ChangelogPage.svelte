@@ -1,5 +1,9 @@
 <div class="wrapper">
     <div class="panel scrollbar-style">
+	<h2>Version 1.0.6</h2>
+        <ul>
+            <li>Fixed the crashing issue when sometimes creating a new item.</li>
+        </ul> 
         <h2>Version 1.0.5</h2>
         <ul>
             <li>Added pagination for the lists.</li>
