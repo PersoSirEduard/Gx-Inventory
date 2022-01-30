@@ -10,6 +10,7 @@ export function genId() {
 export async function api(method, path, data = {}) {
 
     const URL = "http://10.2.20.53:3000/api/";
+    // const URL = "http://localhost:3000/api/";
     const KEY = localStorage.getItem('key');
 
     if (method === 'GET') {

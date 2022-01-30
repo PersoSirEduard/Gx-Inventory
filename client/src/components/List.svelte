@@ -6,6 +6,7 @@
     export let properties = [];
     export let selectedItem = null;
     export let types;
+    export let campaigns;
     export let totalPages = 1;
     export let currentPage = 1;
 
@@ -36,6 +37,8 @@
             {#each properties as property}
                 {#if property === "type"}
                     <td>{types[item[property]]}</td>
+                {:else if property == "campaign"}
+                    <td>{campaigns[item[property]]}</td>
                 {:else}
                     <td>{item[property]}</td>
                 {/if}

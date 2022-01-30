@@ -13,7 +13,7 @@ const queries_1 = require("../../middlewares/queries");
 const { auth, generateKey } = require('../../middlewares/authentication.js');
 module.exports = (inv) => {
     inv.app.post('/api/equipment', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        let { name, type, status, location, description } = req.body;
+        let { name, type, status, location, description, campaign, serial_number } = req.body;
         if (!name)
             name = "P-" + generateKey(8, true);
         if (!type || Number.isNaN(parseInt(type)))
@@ -29,6 +29,10 @@ module.exports = (inv) => {
             obj = Object.assign(obj, { equipment_location: location });
         if (description != undefined)
             obj = Object.assign(obj, { equipment_description: description });
+        if (serial_number != undefined)
+            obj = Object.assign(obj, { equipment_serial_number: serial_number });
+        if (campaign != undefined && !Number.isNaN(parseInt(campaign)))
+            obj = Object.assign(obj, { equipment_campaign: parseInt(campaign) });
         name = name.replace(" ", "_");
         if (name == "all")
             return res.status(400).send('Name cannot be "all"');
@@ -61,12 +65,23 @@ module.exports = (inv) => {
                         filter.selected = "types.equipment_type_name";
                         filterObj.filterArg = "INNER JOIN (SELECT id AS equipment_type_id, equipment_type_name, equipment_type_description FROM equipment_types) types ON equipments.equipment_type = types.equipment_type_id";
                     }
+                    if (filter.selected == "campaign") {
+                        filter.selected = "all_campaigns.campaign_name";
+                        if (filterObj.filterArg == "") {
+                            filterObj.filterArg = "INNER JOIN (SELECT id AS campaign, campaign_name, campaign_description FROM campaigns) all_campaigns ON equipments.equipment_campaign = all_campaigns.campaign";
+                        }
+                        else {
+                            filterObj.filterArg += " INNER JOIN (SELECT id AS campaign, campaign_name, campaign_description FROM campaigns) all_campaigns ON equipments.equipment_campaign = types.campaign";
+                        }
+                    }
                     if (filter.selected == "status")
                         filter.selected = "equipment_status";
                     if (filter.selected == "location")
                         filter.selected = "equipment_location";
                     if (filter.selected == "description")
                         filter.selected = "equipment_description";
+                    if (filter.selected == "serial_number")
+                        filter.selected = "equipment_serial_number";
                     filterObj.filters.push(filter);
                 }
             }
@@ -96,8 +111,10 @@ module.exports = (inv) => {
             obj = Object.assign(obj, { equipment_location: req.body.location });
         if (req.body.description)
             obj = Object.assign(obj, { equipment_description: req.body.description });
-        if (req.body.agentId && !Number.isNaN(parseInt(req.body.agentId)))
-            obj = Object.assign(obj, { agent_id: parseInt(req.body.agentId) });
+        if (req.body.serial_number)
+            obj = Object.assign(obj, { equipment_serial_number: req.body.serial_number });
+        if (req.body.campaign && !Number.isNaN(parseInt(req.body.campaign)))
+            obj = Object.assign(obj, { equipment_campaign: parseInt(req.body.campaign) });
         if (Object.keys(obj).length == 0)
             return res.status(400).send('Missing inputs');
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'equipments', 'equipment_name', name)))

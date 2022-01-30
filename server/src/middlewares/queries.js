@@ -35,8 +35,8 @@ function getMaxValue(pool, table, subject, filterObj) {
                 searchArgs.push(`${i == 0 ? "WHERE" : ""} LOWER(${filter.selected}) LIKE LOWER('%${filter.value}%')`);
             }
             let searchString = searchArgs.join(" AND ");
-            console.log(`SELECT MAX(id) FROM ${table} ${filterObj.filterArg} ${searchString}`);
-            pool.query(`SELECT MAX(id) FROM ${table} ${filterObj.filterArg} ${searchString}`, (err, result) => {
+            console.log(`SELECT COUNT(id) FROM ${table} ${filterObj.filterArg} ${searchString}`);
+            pool.query(`SELECT COUNT(id) FROM ${table} ${filterObj.filterArg} ${searchString}`, (err, result) => {
                 if (err) {
                     console.log(err);
                     return resolve({
@@ -48,7 +48,7 @@ function getMaxValue(pool, table, subject, filterObj) {
                 return resolve({
                     message: `${subject}s retrieved`,
                     status: 200,
-                    value: result.rows[0].max
+                    value: result.rows[0].count
                 });
             });
         });
@@ -58,9 +58,11 @@ exports.getMaxValue = getMaxValue;
 function getAll(pool, table, subject, amount = 30, filterObj, page = 1) {
     return __awaiter(this, void 0, void 0, function* () {
         var maxVal = (yield getMaxValue(pool, table, subject, filterObj)).value;
+        console.log(`max val: ${maxVal}`);
         if (maxVal == null)
             maxVal = 1;
         const totalPages = Math.ceil(maxVal / (amount >= 0 ? amount : 30));
+        console.log(`pages: ${maxVal}`);
         return new Promise((resolve, _) => {
             if (page > totalPages)
                 return resolve({
@@ -209,7 +211,7 @@ function findFirstDeleted(pool, table, subject) {
                 return resolve({
                     message: `${subject}s retrieved`,
                     status: 200,
-                    value: result.rows[0].id
+                    value: result.rows.length > 0 ? result.rows[0].id : null
                 });
             });
         });

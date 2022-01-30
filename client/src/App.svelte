@@ -4,9 +4,10 @@
     import LogInPage from './pages/LogInPage.svelte';
     import EquipmentPage from './pages/EquipmentPage.svelte';
     import EquipmentTypePage from './pages/EquipmentTypePage.svelte';
+    import CampaignPage from './pages/CampaignPage.svelte';
     import ChangelogPage from './pages/ChangelogPage.svelte';
 
-    let items = ["Equipment", "Equipment Type", "Agents", "Exchange Log", "Changelog"];
+    let items = ["Equipment", "Equipment Type", "Campaign", "Exchange Log", "Changelog"];
     let activeItem = "Equipment";
 
     const tabChange = (e) => activeItem = e.detail;
@@ -36,8 +37,8 @@
         <Tab name="Equipment Type" {activeItem}>
             <EquipmentTypePage />
         </Tab>
-        <Tab name="Agents" {activeItem}>
-            <p class="oups">Oups, it seems this page is under development and will be available soon.</p>
+        <Tab name="Campaign" {activeItem}>
+            <CampaignPage />
         </Tab>
         <Tab name="Exchange Log" {activeItem}>
             <p class="oups">Oups, it seems this page is under development and will be available soon.</p>

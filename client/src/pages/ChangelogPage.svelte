@@ -1,9 +1,18 @@
 <div class="wrapper">
     <div class="panel scrollbar-style">
-	<h2>Version 1.0.6</h2>
+        <h2>Version 1.1.0</h2>
+        <ul>
+            <li>Removed the agent page.</li>
+            <li>Added the campaign page.</li>
+            <li>Added the serial number and agent fields for equipments.</li>
+            <li>Fixed total visible pages bug (?).</li>
+        </ul> 
+        <div class="separator"></div>
+	    <h2>Version 1.0.6</h2>
         <ul>
             <li>Fixed the crashing issue when sometimes creating a new item.</li>
         </ul> 
+        <div class="separator"></div>
         <h2>Version 1.0.5</h2>
         <ul>
             <li>Added pagination for the lists.</li>
@@ -22,15 +31,6 @@
         <h2>Version 1.0.0</h2>
         <ul>
             <li>Initial release of the application.</li>
-        </ul>
-        <div class="separator"></div>
-        <h2>TODO</h2>
-        <ul>
-            <li>Implement the agents page.</li>
-            <li>Link up the agents to their equipment.</li>
-            <li>Implement the exchange log page.</li>
-            <li>Implement user modification description.</li>
-            <li>And more...</li>
         </ul>
     </div>  
 </div>
