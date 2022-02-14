@@ -62,7 +62,7 @@ function getAll(pool, table, subject, amount = 30, filterObj, page = 1) {
         if (maxVal == null)
             maxVal = 1;
         const totalPages = Math.ceil(maxVal / (amount >= 0 ? amount : 30));
-        console.log(`pages: ${maxVal}`);
+        console.log(`pages: ${totalPages}`);
         return new Promise((resolve, _) => {
             if (page > totalPages)
                 return resolve({

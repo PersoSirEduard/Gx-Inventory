@@ -13,7 +13,7 @@ const queries_1 = require("../../middlewares/queries");
 const { auth, generateKey } = require('../../middlewares/authentication.js');
 module.exports = (inv) => {
     inv.app.post('/api/equipment', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        let { name, type, status, location, description, campaign, serial_number } = req.body;
+        let { name, type, status, location, description, campaign, serial_number, brand, model, agent } = req.body;
         if (!name)
             name = "P-" + generateKey(8, true);
         if (!type || Number.isNaN(parseInt(type)))
@@ -31,6 +31,12 @@ module.exports = (inv) => {
             obj = Object.assign(obj, { equipment_description: description });
         if (serial_number != undefined)
             obj = Object.assign(obj, { equipment_serial_number: serial_number });
+        if (brand != undefined)
+            obj = Object.assign(obj, { equipment_brand: brand });
+        if (model != undefined)
+            obj = Object.assign(obj, { equipment_model: model });
+        if (agent != undefined)
+            obj = Object.assign(obj, { equipment_agent: agent });
         if (campaign != undefined && !Number.isNaN(parseInt(campaign)))
             obj = Object.assign(obj, { equipment_campaign: parseInt(campaign) });
         name = name.replace(" ", "_");
@@ -82,6 +88,12 @@ module.exports = (inv) => {
                         filter.selected = "equipment_description";
                     if (filter.selected == "serial_number")
                         filter.selected = "equipment_serial_number";
+                    if (filter.selected == "brand")
+                        filter.selected = "equipment_brand";
+                    if (filter.selected == "model")
+                        filter.selected = "equipment_model";
+                    if (filter.selected == "agent")
+                        filter.selected = "equipment_agent";
                     filterObj.filters.push(filter);
                 }
             }
@@ -113,6 +125,12 @@ module.exports = (inv) => {
             obj = Object.assign(obj, { equipment_description: req.body.description });
         if (req.body.serial_number)
             obj = Object.assign(obj, { equipment_serial_number: req.body.serial_number });
+        if (req.body.brand)
+            obj = Object.assign(obj, { equipment_brand: req.body.brand });
+        if (req.body.model)
+            obj = Object.assign(obj, { equipment_model: req.body.model });
+        if (req.body.agent)
+            obj = Object.assign(obj, { equipment_agent: req.body.agent });
         if (req.body.campaign && !Number.isNaN(parseInt(req.body.campaign)))
             obj = Object.assign(obj, { equipment_campaign: parseInt(req.body.campaign) });
         if (Object.keys(obj).length == 0)

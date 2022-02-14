@@ -24,7 +24,12 @@
 
         let newItem = {}
         for (const [key, element] of Object.entries(output)) {
-            newItem[key] = element.value;
+            if (element) {
+                newItem[key] = element.value == "" ? " ": element.value;
+            } else {
+                newItem[key] = "";
+            }
+           
         }
         
         dispatch('onUpdate', newItem);
@@ -45,6 +50,7 @@
     {#each structure as row}
     <div class="row-wrapper">
         {#each row as column}
+            {#if !column.onlyif || column.onlyif.includes(selectedItem["type"])}
             <div>
 
                 <label for={column.name}>{column.label}:</label>
@@ -74,6 +80,7 @@
                     <RichInputBox id={column.name} bind:this={output[column.name]} value={String(selectedItem[column.name])} height="110px"/>
                 {/if}
             </div>
+            {/if}
         {/each}
     </div>
 {/each}

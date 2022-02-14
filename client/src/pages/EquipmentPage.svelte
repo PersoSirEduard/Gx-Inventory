@@ -68,7 +68,10 @@
                 location: e.detail.location,
                 description: e.detail.description,
                 campaign: e.detail.campaign,
-                serial_number: e.detail.serial_number
+                serial_number: e.detail.serial_number,
+                agent: e.detail.agent,
+                brand: e.detail.brand,
+                model: e.detail.model
             });
             
         } catch (e) {
@@ -98,7 +101,9 @@
     $: newItemStructure = [
         [{type: "text", label: "Name", value: "", name: "name"}, {type: "select-obj", label: "Type", value: Object.keys(types)[0], values: types, name: "type"}],
         [{type: "text", label: "Location", value: "", name: "location"}, {type: "select", label: "Status", value: "In Stock", values: ["In Stock", "In Use", "Unknown", "Not Returned - Formal Notice"], name: "status"}],
-        [{type: "text", label: "Serial Number", value: "", name: "serial_number"}, {type: "select-obj", label: "Campaign", value: Object.keys(campaigns)[0], values: campaigns, name: "campaign"}],
+        [{type: "text", label: "Agent Name", value: "", name: "agent"}, {type: "select-obj", label: "Campaign", value: Object.keys(campaigns)[0], values: campaigns, name: "campaign"}],
+        [{type: "text", label: "Brand", value: "", name: "brand"}, {type: "text", label: "Model", value: "", name: "model"}],
+        [{type: "text", label: "Serial Number", value: "", name: "serial_number", onlyif: Object.entries(types).filter((el) => el[1] == "Laptop" || el[1] == "PC").map((el) => parseInt(el[0])) }],
         [{type: "richtext", label: "Description", value: "", name: "description"}]
     ];
     let newItemWindow = false;
@@ -113,7 +118,17 @@
             
             // Found equipment already in list
             if (equipment != undefined && equipment.value != undefined && equipment.value.length > 0) {
-                selectedItem = {id: equipment.value[0].id, name: equipment.value[0].equipment_name, type: equipment.value[0].equipment_type, status: equipment.value[0].equipment_status, location: equipment.value[0].equipment_location, description: equipment.value[0].equipment_description, campaign: equipment.value[0].equipment_campaign, serial_number: equipment.value[0].equipment_serial_number};
+                selectedItem = {id: equipment.value[0].id, 
+                                name: equipment.value[0].equipment_name,
+                                type: equipment.value[0].equipment_type,
+                                status: equipment.value[0].equipment_status,
+                                location: equipment.value[0].equipment_location,
+                                description: equipment.value[0].equipment_description,
+                                campaign: equipment.value[0].equipment_campaign,
+                                brand: equipment.value[0].equipment_brand,
+                                model: equipment.value[0].equipment_model,
+                                agent: equipment.value[0].equipment_agent,
+                                serial_number: equipment.value[0].equipment_serial_number};
             }
             else {
                 // Equipment not found. Create new item
@@ -198,7 +213,17 @@
             // Update items list
             items = [];
             for (let i = 0; i < equipments.value.length; i++) {
-                items.push({id: equipments.value[i].id, name: equipments.value[i].equipment_name, type: equipments.value[i].equipment_type, status: equipments.value[i].equipment_status, location: equipments.value[i].equipment_location, description: equipments.value[i].equipment_description, campaign: equipments.value[i].equipment_campaign, serial_number: equipments.value[i].equipment_serial_number});
+                items.push({id: equipments.value[i].id,
+                            name: equipments.value[i].equipment_name,
+                            type: equipments.value[i].equipment_type,
+                            status: equipments.value[i].equipment_status,
+                            location: equipments.value[i].equipment_location,
+                            description: equipments.value[i].equipment_description,
+                            campaign: equipments.value[i].equipment_campaign,
+                            model: equipments.value[i].equipment_model,
+                            brand: equipments.value[i].equipment_brand,
+                            agent: equipments.value[i].equipment_agent,
+                            serial_number: equipments.value[i].equipment_serial_number});
             }
 
         } catch (err) {
@@ -233,7 +258,7 @@
 <PropertyPanel>
 
     <Header title="Search" icon="assets/filter-icon.svg" />
-    <FilterBox properties={[].concat(properties, ["serial_number"])} bind:filters/>
+    <FilterBox properties={[].concat(properties, ["serial_number", "agent", "brand", "model"])} bind:filters/>
     <div class="row-wrapper" style="justify-content: flex-end;">
         <button class="btn" on:click={onClickAddQuery} style="--btn-color: #ccc;"><span style="font-weight:bold;">+</span> Add New Query</button>
         <button class="btn" on:click={onClickSearch} style="--btn-color: #ccc;"><img src="assets/search-icon.svg" alt="Search" style="width: 15px; height: 15px; margin-right: 5px;">Search</button>

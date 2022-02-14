@@ -1,5 +1,14 @@
 <div class="wrapper">
     <div class="panel scrollbar-style">
+        <h2>Version 1.1.5</h2>
+        <ul>
+            <li>Added brand field property for equipments.</li>
+            <li>Added model field property for equipments.</li>
+            <li>Added agent field property for equipments.</li>
+            <li>Change with the serial number that will only be available for certain equipment type.</li>
+            <li>Fixed the bug where empty fields would not save.</li>
+        </ul> 
+        <div class="separator"></div>
         <h2>Version 1.1.0</h2>
         <ul>
             <li>Removed the agent page.</li>
