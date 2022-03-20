@@ -24,6 +24,17 @@
     let error = false;
     let errorTitle = 'Error';
     let errorMessage = '';
+    let onEndError = () => {};
+
+    const showError = (msg, title, onEnd = () => {}) => {
+        errorMessage = msg;
+        errorTitle = title;
+        onEndError = () => {
+            error = false;
+            onEnd();
+        }
+        error = true;
+    }
 
     // Container panel
     // On new item selected event
@@ -44,9 +55,7 @@
 
     const onClickAddQuery = () => {
         if (filters.length >= 5) {
-            error = true;
-            errorTitle = 'Too many filters';
-            errorMessage = 'You can only have a maximum of 5 filters.';
+            showError('You can only have a maximum of 5 filters.', 'Too many filters');
             return;
         }
         filters.push({value: "", selected: properties[0], id: genId()});
@@ -70,9 +79,7 @@
             });
             
         } catch (e) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = e.message;
+            showError(e.message, 'Error');
         }
 
         // Reload list
@@ -86,9 +93,7 @@
 
             await reload();
         } catch (e) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = e.message;
+            showError(e.message, 'Error');
         }
     };
 
@@ -133,9 +138,7 @@
             // Reload list
             await reload();
         } catch (err) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = err;
+            showError(err.message, 'Error');
         }
     }
 
@@ -165,9 +168,7 @@
             }
 
         } catch (err) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = err;
+            showError(err.message, 'Error');
         }
 
     }
@@ -182,7 +183,7 @@
 <ScannerListener on:onScan={onScan}/>
 
 {#if error}
-        <Popup title={errorTitle} message={errorMessage} bind:visible={error} okButton={true}/>
+        <Popup title={errorTitle} message={errorMessage} bind:visible={error} okButton={true} on:onOk={onEndError} on:onCancel={onEndError}/>
 {/if}
 
 {#if newItemWindow}

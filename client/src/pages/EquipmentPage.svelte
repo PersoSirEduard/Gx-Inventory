@@ -10,6 +10,7 @@
     import PopupForm from '../components/PopupForm.svelte';
     import { onMount } from 'svelte';
     import { genId, api } from '../helpers/utils.js';
+    import download from 'downloadjs';
 
 
     // Global variables
@@ -21,11 +22,23 @@
     let selectedItem = null;
     let currentPage = 1;
     let totalPages = 1;
+    let totalItems = 0;
 
     // Global error variables
     let error = false;
     let errorTitle = 'Error';
     let errorMessage = '';
+    let onEndError = () => {};
+
+    const showError = (msg, title, onEnd = () => {}) => {
+        errorMessage = msg;
+        errorTitle = title;
+        onEndError = () => {
+            error = false;
+            onEnd();
+        }
+        error = true;
+    }
 
     // Container panel
     // On new item selected event
@@ -55,6 +68,17 @@
         filters = filters;
     };
 
+    const onClickDownload = async () => {
+        try {
+            const downloadData = await api('GET', 'equipment/download');
+            download(downloadData, 'equipment.csv', 'text/csv');
+
+        } catch (err) {
+            showError(err.message, 'Error');
+            return
+        }
+    }
+
 
     // Properties panel
     const onUpdate = async (e) => {
@@ -75,9 +99,7 @@
             });
             
         } catch (e) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = e.message;
+            showError(e.message, 'Error');
         }
 
         // Reload list
@@ -91,9 +113,7 @@
 
             await reload();
         } catch (e) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = e.message;
+            showError(e.message.message, 'Error');
         }
     };
 
@@ -137,7 +157,7 @@
             }
 
         } catch (err) {
-	    console.log(err);
+	        console.log(err);
             newItemWindow = true;
             newItemStructure[0][0].value = e.detail;
         }
@@ -154,9 +174,7 @@
             // Reload list
             await reload();
         } catch (err) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = err;
+            showError(err.message, 'Error');
         }
     }
 
@@ -180,9 +198,8 @@
             }
 
         } catch (err) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = err;
+            showError(err.message, 'Error');
+            return
         }
 
         // Get equipment campaign list
@@ -196,9 +213,8 @@
             }
 
         } catch (err) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = err;
+            showError(err.message, 'Error');
+            return
         }
 
         // Get equipment list
@@ -209,6 +225,8 @@
             if (currentPage > totalPages) {
                 currentPage = totalPages;
             }
+
+            totalItems = equipments.count; // Update total items
 
             // Update items list
             items = [];
@@ -227,9 +245,7 @@
             }
 
         } catch (err) {
-            error = true;
-            errorTitle = 'Error';
-            errorMessage = err;
+            showError(err.message, 'Error');
         }
 
     }
@@ -244,7 +260,7 @@
 <ScannerListener on:onScan={onScan}/>
 
 {#if error}
-        <Popup title={errorTitle} message={errorMessage} bind:visible={error} okButton={true}/>
+        <Popup title={errorTitle} message={errorMessage} bind:visible={error} okButton={true} on:onOk={onEndError} on:onCancel={onEndError}/>
 {/if}
 
 {#if newItemWindow}
@@ -260,9 +276,15 @@
     <Header title="Search" icon="assets/filter-icon.svg" />
     <FilterBox properties={[].concat(properties, ["serial_number", "agent", "brand", "model"])} bind:filters/>
     <div class="row-wrapper" style="justify-content: flex-end;">
+        {#if totalItems > 0}
+            <button class="btn" on:click={onClickDownload} style="--btn-color: #ccc;"><img src="assets/csv-icon.svg" alt="Search" style="width: 15px; height: 15px; margin-right: 5px;">Download</button>
+        {/if}
         <button class="btn" on:click={onClickAddQuery} style="--btn-color: #ccc;"><span style="font-weight:bold;">+</span> Add New Query</button>
         <button class="btn" on:click={onClickSearch} style="--btn-color: #ccc;"><img src="assets/search-icon.svg" alt="Search" style="width: 15px; height: 15px; margin-right: 5px;">Search</button>
     </div>
+    {#if totalItems > 0}
+        <b style="margin-left: auto; margin-right: 10px;">Found {totalItems} items.</b>
+    {/if}
 
     <Header title="Properties" icon="assets/params-icon.svg" />
     <DetailForm {selectedItem} structure={newItemStructure} on:onUpdate={onUpdate} on:onDelete={onDelete}/>

@@ -7,7 +7,7 @@
     import CampaignPage from './pages/CampaignPage.svelte';
     import ChangelogPage from './pages/ChangelogPage.svelte';
 
-    let items = ["Equipment", "Equipment Type", "Campaign", "Exchange Log", "Changelog"];
+    let items = ["Equipment", "Equipment Type", "Campaign", "Changelog"];
     let activeItem = "Equipment";
 
     const tabChange = (e) => activeItem = e.detail;
@@ -39,9 +39,6 @@
         </Tab>
         <Tab name="Campaign" {activeItem}>
             <CampaignPage />
-        </Tab>
-        <Tab name="Exchange Log" {activeItem}>
-            <p class="oups">Oups, it seems this page is under development and will be available soon.</p>
         </Tab>
         <Tab name="Changelog" {activeItem}>
             <ChangelogPage />

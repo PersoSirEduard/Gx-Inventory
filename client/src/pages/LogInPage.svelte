@@ -6,6 +6,17 @@
     let error = false;
     let errorMessage = 'Error';
     let errorTitle = '';
+    let onEndError = () => {};
+
+    const showError = (msg, title, onEnd = () => {}) => {
+        error = true;
+        errorMessage = msg;
+        errorTitle = title;
+        onEndError = () => {
+            error = false;
+            onEnd();
+        }
+    }
 
     let inventoryKey = '';
 
@@ -17,18 +28,10 @@
     const onNewAuth = async (e) => {
         try {
             const response = await api('GET', 'auth/new');
-
-            error = true;
-            errorMessage = "A new key has been generated. Please verify your email inbox.";
-            errorTitle = "Success";
-
+            showError("A new key has been generated. Please verify your email inbox.", "Success", () => { location.reload();});
 
         } catch (err) {
-            console.log(err)
-
-            error = true;
-            errorMessage = err;
-            errorTitle = 'Error';
+            showError(err.message, "Error");
         }
     };
 
@@ -50,7 +53,7 @@
 </div>
 
 {#if error}
-    <Popup title={errorTitle} message={errorMessage} okButton={true} on:onOk={() => location.reload()}/>
+    <Popup title={errorTitle} message={errorMessage} okButton={true} on:onOk={onEndError}/>
 {/if}
 
 <style>
