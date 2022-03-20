@@ -14,17 +14,12 @@ function initBackup() {
     rule.dayOfWeek = 5;
     rule.hour = 20;
     rule.minute = 0;
-    if (!process.env.DB_USER)
-        throw new Error('DB_USER environment variable is not set');
-    if (!process.env.DB_NAME)
-        throw new Error('DB_NAME environment variable is not set');
-    if (!process.env.DB_PASSWORD)
-        throw new Error('DB_PASSWORD environment variable is not set');
     schedule.scheduleJob(rule, () => __awaiter(this, void 0, void 0, function* () {
-        console.log('Backup initiated');
-        execute(`pg_dump --dbname=postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@localhost:5432/${process.env.DB_NAME} -f inventory_backup.dump -F t`).then(() => {
-            console.log('Backup finished');
-        }).catch((err) => {
+        const currentTime = `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
+        console.log(`Backup initiated at ${currentTime}.`);
+        execute(`pg_dump --dbname=postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME} -f %appdata%/inventory_backup_${currentTime}.tar -F t`).then(() => __awaiter(this, void 0, void 0, function* () {
+            console.log('Backup finished.');
+        })).catch((err) => {
             console.log(err);
         });
     }));

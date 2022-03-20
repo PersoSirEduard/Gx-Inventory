@@ -1,3 +1,5 @@
 node_modules/
 .env
-*.ts
+*.js
+*.js.map
+*.sql

@@ -9,7 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.del = exports.findFirstDeleted = exports.update = exports.getByParam = exports.create = exports.getAll = exports.getMaxValue = exports.doesExist = void 0;
+exports.remove = exports.update = exports.create = exports.query = exports.findFirstDeleted = exports.getCount = exports.getByParam = exports.doesExist = void 0;
+function parseFilters(filterObj) {
+    let searchArgs = [];
+    for (let i = 0; i < filterObj.filters.length; i++) {
+        const filter = filterObj.filters[i];
+        if (!filter.value || !filter.selected)
+            continue;
+        searchArgs.push(`LOWER(${filter.selected}) LIKE LOWER('%${filter.value}%')`);
+    }
+    const searchString = searchArgs.join(" AND ");
+    return searchString;
+}
 function doesExist(pool, table, param, value) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -24,19 +35,33 @@ function doesExist(pool, table, param, value) {
     });
 }
 exports.doesExist = doesExist;
-function getMaxValue(pool, table, subject, filterObj) {
+function getByParam(pool, table, param, value, subject) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, _) => {
-            let searchArgs = [];
-            for (let i = 0; i < filterObj.filters.length; i++) {
-                let filter = filterObj.filters[i];
-                if (!filter.value || !filter.selected)
-                    continue;
-                searchArgs.push(`${i == 0 ? "WHERE" : ""} LOWER(${filter.selected}) LIKE LOWER('%${filter.value}%')`);
-            }
-            let searchString = searchArgs.join(" AND ");
-            console.log(`SELECT COUNT(id) FROM ${table} ${filterObj.filterArg} ${searchString}`);
-            pool.query(`SELECT COUNT(id) FROM ${table} ${filterObj.filterArg} ${searchString}`, (err, result) => {
+            pool.query(`SELECT * FROM ${table} WHERE ${param}='${value}'`, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return resolve({
+                        message: `Error querying ${subject}`,
+                        status: 500,
+                        value: null
+                    });
+                }
+                return resolve({
+                    message: `${subject} retrieved`,
+                    status: 200,
+                    value: result.rows[0]
+                });
+            });
+        });
+    });
+}
+exports.getByParam = getByParam;
+function getCount(pool, table, subject, filterObj) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, _) => {
+            const searchString = parseFilters(filterObj);
+            pool.query(`SELECT COUNT(id) FROM ${table} ${filterObj.preArgument} WHERE ${searchString} ${searchString.length > 0 ? 'AND' : ""} deleted IS FALSE`, (err, result) => {
                 if (err) {
                     console.log(err);
                     return resolve({
@@ -54,56 +79,71 @@ function getMaxValue(pool, table, subject, filterObj) {
         });
     });
 }
-exports.getMaxValue = getMaxValue;
-function getAll(pool, table, subject, amount = 30, filterObj, page = 1) {
+exports.getCount = getCount;
+function findFirstDeleted(pool, table, subject) {
     return __awaiter(this, void 0, void 0, function* () {
-        var maxVal = (yield getMaxValue(pool, table, subject, filterObj)).value;
-        console.log(`max val: ${maxVal}`);
-        if (maxVal == null)
-            maxVal = 1;
-        const totalPages = Math.ceil(maxVal / (amount >= 0 ? amount : 30));
-        console.log(`pages: ${totalPages}`);
         return new Promise((resolve, _) => {
-            if (page > totalPages)
+            pool.query(`SELECT id FROM ${table} WHERE deleted IS TRUE LIMIT 1`, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return resolve({
+                        message: `Error querying ${subject}s`,
+                        status: 500,
+                        value: null
+                    });
+                }
+                return resolve({
+                    message: `${subject}s retrieved`,
+                    status: 200,
+                    value: result.rows.length > 0 ? result.rows[0].id : null
+                });
+            });
+        });
+    });
+}
+exports.findFirstDeleted = findFirstDeleted;
+function query(pool, table, subject, amount = 30, filterObj, page = 1) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let entryCount = (yield getCount(pool, table, subject, filterObj)).value;
+        if (entryCount == null)
+            entryCount = 1;
+        const totalPages = Math.ceil(entryCount / (amount > 0 ? amount : 30));
+        return new Promise((resolve, _) => {
+            if (page - 1 > totalPages)
                 return resolve({
                     message: "Invalid page number",
                     status: 400,
                     value: null
                 });
-            let searchArgs = [];
-            for (let i = 0; i < filterObj.filters.length; i++) {
-                let filter = filterObj.filters[i];
-                if (!filter.value || !filter.selected)
-                    continue;
-                searchArgs.push(`AND LOWER(${filter.selected}) LIKE LOWER('%${filter.value}%') `);
-            }
-            let searchString = searchArgs.join("");
-            console.log(`SELECT * FROM ${table} ${filterObj.filterArg} WHERE id > ${(page - 1) * (amount >= 0 ? amount : 30)} AND deleted IS FALSE ${searchString} ORDER BY id ASC ${amount >= 0 ? 'LIMIT ' + String(amount) : ""}`);
-            pool.query(`SELECT * FROM ${table} ${filterObj.filterArg} WHERE id > ${(page - 1) * (amount >= 0 ? amount : 30)} AND deleted IS FALSE ${searchString} ORDER BY id ASC ${amount >= 0 ? 'LIMIT ' + String(amount) : ""}`, (err, result) => {
+            var searchString = parseFilters(filterObj);
+            pool.query(`SELECT * FROM ${table} ${filterObj.preArgument} WHERE ${searchString} ${searchString.length > 0 ? 'AND' : ""} deleted IS FALSE ORDER BY id ASC ${amount >= 0 ? 'LIMIT ' + String(amount) : ""} ${amount >= 0 ? 'OFFSET ' + String((page - 1) * amount) : ""}`, (err, result) => {
                 if (err) {
                     console.log(err);
                     return resolve({
                         message: `Error querying ${subject}s`,
                         status: 500,
                         value: null,
-                        pages: totalPages
+                        pages: totalPages,
+                        count: entryCount
                     });
                 }
                 return resolve({
                     message: `${subject}s retrieved`,
                     status: 200,
                     value: result.rows,
-                    pages: totalPages
+                    pages: totalPages,
+                    count: entryCount
                 });
             });
         });
     });
 }
-exports.getAll = getAll;
+exports.query = query;
 function create(pool, table, inputs, subject) {
     return __awaiter(this, void 0, void 0, function* () {
         const availableIndex = yield findFirstDeleted(pool, table, subject);
         return new Promise((resolve, _) => {
+            inputs = Object.assign(inputs, { modified_at: new Date() });
             if (availableIndex.value != undefined && availableIndex.value != null) {
                 var objs = "";
                 Object.entries(inputs).forEach(([key, value]) => {
@@ -147,31 +187,10 @@ function create(pool, table, inputs, subject) {
     });
 }
 exports.create = create;
-function getByParam(pool, table, param, value, subject) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, _) => {
-            pool.query(`SELECT * FROM ${table} WHERE ${param}='${value}'`, (err, result) => {
-                if (err) {
-                    console.log(err);
-                    return resolve({
-                        message: `Error querying ${subject}`,
-                        status: 500,
-                        value: null
-                    });
-                }
-                return resolve({
-                    message: `${subject} retrieved`,
-                    status: 200,
-                    value: result.rows[0]
-                });
-            });
-        });
-    });
-}
-exports.getByParam = getByParam;
 function update(pool, table, id, inputs, subject) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, _) => {
+            inputs = Object.assign(inputs, { modified_at: new Date() });
             var objs = "";
             Object.entries(inputs).forEach(([key, value]) => {
                 objs += `${key}='${value}', `;
@@ -196,29 +215,7 @@ function update(pool, table, id, inputs, subject) {
     });
 }
 exports.update = update;
-function findFirstDeleted(pool, table, subject) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, _) => {
-            pool.query(`SELECT id FROM ${table} WHERE deleted IS TRUE LIMIT 1`, (err, result) => {
-                if (err) {
-                    console.log(err);
-                    return resolve({
-                        message: `Error querying ${subject}s`,
-                        status: 500,
-                        value: null
-                    });
-                }
-                return resolve({
-                    message: `${subject}s retrieved`,
-                    status: 200,
-                    value: result.rows.length > 0 ? result.rows[0].id : null
-                });
-            });
-        });
-    });
-}
-exports.findFirstDeleted = findFirstDeleted;
-function del(pool, table, id, subject) {
+function remove(pool, table, id, subject) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, _) => {
             pool.query(`UPDATE ${table} SET deleted=true WHERE id=${id} RETURNING *`, (err, result) => {
@@ -239,5 +236,5 @@ function del(pool, table, id, subject) {
         });
     });
 }
-exports.del = del;
+exports.remove = remove;
 //# sourceMappingURL=queries.js.map

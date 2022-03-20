@@ -33,6 +33,28 @@ const app = (0, express_1.default)();
 app.use(body_parser_1.default.json());
 app.use((0, cors_1.default)());
 app.use((0, helmet_1.default)());
+if (!process.env.DB_USER)
+    throw new Error('DB_USER environment variable is not set');
+if (!process.env.DB_NAME)
+    throw new Error('DB_NAME environment variable is not set');
+if (!process.env.DB_PASSWORD)
+    throw new Error('DB_PASSWORD environment variable is not set');
+if (!process.env.DB_HOST)
+    throw new Error('DB_PASSWORD environment variable is not set');
+if (!process.env.DB_PORT)
+    throw new Error('DB_PORT environment variable is not set');
+if (!process.env.WS_PORT)
+    throw new Error('WS_PORT environment variable is not set');
+if (!process.env.EMAIL)
+    throw new Error('EMAIL environment variable is not set');
+if (!process.env.EMAIL_PASSWORD)
+    throw new Error('EMAIL environment variable is not set');
+if (!process.env.EMAIL_DESTINATION)
+    throw new Error('EMAIL_DESTINATION environment variable is not set');
+if (!process.env.AUTH_WAIT_TIME)
+    throw new Error('AUTH_WAIT_TIME environment variable is not set');
+if (!process.env.AUTH_VALID_TIME)
+    throw new Error('AUTH_VALID_TIME environment variable is not set');
 const pool = new pg_1.default.Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,

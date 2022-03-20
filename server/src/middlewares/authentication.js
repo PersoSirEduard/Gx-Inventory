@@ -12,9 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const email_1 = require("../helpers/email");
 var avaiableKeys = [];
 function purgeKeys() {
-    var currentTime = new Date().getTime();
-    if (!process.env.AUTH_VALID_TIME)
-        throw new Error("AUTH_VALID_TIME is not set");
+    const currentTime = new Date().getTime();
     for (var i = 0; i < avaiableKeys.length; i++) {
         if (currentTime - avaiableKeys[i].timestamp >= parseInt(process.env.AUTH_VALID_TIME)) {
             avaiableKeys.splice(i, 1);
@@ -23,16 +21,10 @@ function purgeKeys() {
 }
 function sendNewVerification() {
     purgeKeys();
-    if (!process.env.AUTH_WAIT_TIME)
-        throw new Error("AUTH_WAIT_TIME is not set");
-    var currentTime = new Date().getTime();
+    const currentTime = new Date().getTime();
     if (avaiableKeys.length > 0 && currentTime - avaiableKeys[avaiableKeys.length - 1].timestamp <= parseInt(process.env.AUTH_WAIT_TIME))
         throw new Error("Unable to generate a new key. Please try again later");
-    var newKey = generateKey(15);
-    if (!process.env.AUTH_VALID_TIME)
-        throw new Error("AUTH_VALID_TIME is not set");
-    if (!process.env.EMAIL_DESTINATION)
-        throw new Error("EMAIL_DESTINATION is not set");
+    const newKey = generateKey(15);
     try {
         (0, email_1.sendEmail)(process.env.EMAIL_DESTINATION, "Inventory Authentication", `The following key is valid for ${parseInt(process.env.AUTH_VALID_TIME) / 3600000.0} hours: ${newKey}`);
         avaiableKeys.push({
@@ -41,8 +33,8 @@ function sendNewVerification() {
         });
     }
     catch (err) {
-        console.log(err);
-        throw new Error("Error sending the email");
+        console.log("Error sending the authentication email.");
+        throw new Error("Error sending the authentication email. Please try again later.");
     }
 }
 function generateKey(length, numerical = false) {
@@ -57,13 +49,10 @@ function generateKey(length, numerical = false) {
 }
 function auth(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        2;
-        if (!process.env.AUTH_VALID_TIME)
-            return res.status(500).send("AUTH_VALID_TIME is not set");
-        var key = req.header("Authorization");
+        const key = req.header("Authorization");
         if (!key)
-            return res.status(401).send("No authentication key was provided");
-        var currentTime = new Date().getTime();
+            return res.status(401).send({ message: "No authentication key was provided" });
+        const currentTime = new Date().getTime();
         var validKey = false;
         for (var i = 0; i < avaiableKeys.length; i++) {
             if (avaiableKeys[i].key === key && currentTime - avaiableKeys[i].timestamp < parseInt(process.env.AUTH_VALID_TIME)) {
@@ -72,7 +61,7 @@ function auth(req, res, next) {
             }
         }
         if (!validKey)
-            return res.status(401).send("Invalid or expired authentication key");
+            return res.status(401).send({ message: "Invalid or expired authentication key" });
         next();
     });
 }

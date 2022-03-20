@@ -10,16 +10,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const queries_1 = require("../../middlewares/queries");
+const sync_1 = require("csv-stringify/sync");
 const { auth, generateKey } = require('../../middlewares/authentication.js');
+var latestQueryFilters;
 module.exports = (inv) => {
     inv.app.post('/api/equipment', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let { name, type, status, location, description, campaign, serial_number, brand, model, agent } = req.body;
         if (!name)
             name = "P-" + generateKey(8, true);
         if (!type || Number.isNaN(parseInt(type)))
-            return res.status(400).send('Missing or invalid type');
+            return res.status(400).send({ message: "Missing or invalid type", status: 400 });
         if (!status)
-            return res.status(400).send('Missing status');
+            return res.status(400).send({ message: "Missing status", status: 400 });
         let obj = {
             equipment_name: name,
             equipment_type: parseInt(type),
@@ -41,9 +43,9 @@ module.exports = (inv) => {
             obj = Object.assign(obj, { equipment_campaign: parseInt(campaign) });
         name = name.replace(" ", "_");
         if (name == "all")
-            return res.status(400).send('Name cannot be "all"');
+            return res.status(400).send({ message: 'Name cannot be "all"', status: 400 });
         if (yield (0, queries_1.doesExist)(inv.pool, 'equipments', 'equipment_name', name))
-            return res.status(400).send('Name already exists');
+            return res.status(400).send({ message: 'Name already exists', status: 400 });
         const response = yield (0, queries_1.create)(inv.pool, 'equipments', obj, "Equipment Item");
         return res.status(response.status).send(response);
     }));
@@ -56,7 +58,7 @@ module.exports = (inv) => {
         else {
             req.body.page = 1;
         }
-        let filterObj = { filters: [], filterArg: "" };
+        let filterObj = { filters: [], preArgument: "" };
         if (req.body.filters != undefined) {
             for (let f = 0; f < req.body.filters.length; f++) {
                 let filter = req.body.filters[f];
@@ -69,15 +71,15 @@ module.exports = (inv) => {
                         filter.selected = "equipment_name";
                     if (filter.selected == "type") {
                         filter.selected = "types.equipment_type_name";
-                        filterObj.filterArg = "INNER JOIN (SELECT id AS equipment_type_id, equipment_type_name, equipment_type_description FROM equipment_types) types ON equipments.equipment_type = types.equipment_type_id";
+                        filterObj.preArgument = "INNER JOIN (SELECT id AS equipment_type_id, equipment_type_name, equipment_type_description FROM equipment_types) types ON equipments.equipment_type = types.equipment_type_id";
                     }
                     if (filter.selected == "campaign") {
                         filter.selected = "all_campaigns.campaign_name";
-                        if (filterObj.filterArg == "") {
-                            filterObj.filterArg = "INNER JOIN (SELECT id AS campaign, campaign_name, campaign_description FROM campaigns) all_campaigns ON equipments.equipment_campaign = all_campaigns.campaign";
+                        if (filterObj.preArgument == "") {
+                            filterObj.preArgument = "INNER JOIN (SELECT id AS campaign, campaign_name, campaign_description FROM campaigns) all_campaigns ON equipments.equipment_campaign = all_campaigns.campaign";
                         }
                         else {
-                            filterObj.filterArg += " INNER JOIN (SELECT id AS campaign, campaign_name, campaign_description FROM campaigns) all_campaigns ON equipments.equipment_campaign = types.campaign";
+                            filterObj.preArgument += " INNER JOIN (SELECT id AS campaign, campaign_name, campaign_description FROM campaigns) all_campaigns ON equipments.equipment_campaign = types.campaign";
                         }
                     }
                     if (filter.selected == "status")
@@ -98,19 +100,55 @@ module.exports = (inv) => {
                 }
             }
         }
-        const response = yield (0, queries_1.getAll)(inv.pool, 'equipments', "Equipment Item", req.body.amount != undefined ? req.body.amount : 30, filterObj, req.body.page != undefined ? req.body.page : 1);
+        const response = yield (0, queries_1.query)(inv.pool, 'equipments', "Equipment Item", req.body.amount != undefined ? req.body.amount : 30, filterObj, req.body.page != undefined ? req.body.page : 1);
+        if (response.status == 200)
+            latestQueryFilters = filterObj;
         return res.status(response.status).send(response);
+    }));
+    inv.app.get('/api/equipment/download', auth, (_, res) => __awaiter(void 0, void 0, void 0, function* () {
+        res.setHeader('Content-disposition', 'attachment; filename=equipment.csv');
+        res.setHeader('Content-type', 'text/csv');
+        var data = [["Id", "Name", "Type", "Status", "Location", "Serial Number", "Brand", "Model", "Campaign", "Modified at", "Description"]];
+        try {
+            const response = yield (0, queries_1.query)(inv.pool, 'equipments', "Equipment Item", -1, latestQueryFilters, 1);
+            if (response.status == 200) {
+                for (let i = 0; i < response.value.length; i++) {
+                    let item = response.value[i];
+                    let type = item.equipment_type;
+                    try {
+                        type = (yield (0, queries_1.getByParam)(inv.pool, 'equipment_types', 'id', item.equipment_type, 'Equipment Item')).value.equipment_type_name;
+                    }
+                    catch (e) {
+                        type = "Unknown";
+                    }
+                    let campaign = "";
+                    try {
+                        campaign = (yield (0, queries_1.getByParam)(inv.pool, 'campaigns', 'id', item.equipment_campaign, 'Campaign')).value.campaign_name;
+                    }
+                    catch (e) {
+                        campaign = "Unknown";
+                    }
+                    let row = [item.id.toString(), item.equipment_name, type, item.equipment_status, item.equipment_location, item.equipment_serial_number, item.equipment_brand, item.equipment_model, campaign, item.modified_at.toString(), item.equipment_description];
+                    data.push(row);
+                }
+            }
+        }
+        catch (_a) {
+            return res.status(500).send({ message: 'Error while downloading equipment', status: 500 });
+        }
+        const output = (0, sync_1.stringify)(data);
+        return res.send(output);
     }));
     inv.app.get('/api/equipment/:name', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.params.name)
-            return res.status(400).send('Missing name id');
+            return res.status(400).send({ message: "Missing name", status: 400 });
         const name = req.params.name;
         const response = yield (0, queries_1.getByParam)(inv.pool, 'equipments', 'equipment_name', name, "Equipment Item");
         return res.status(response.status).send(response);
     }));
     inv.app.put('/api/equipment/:name', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.params.name)
-            return res.status(400).send('Missing name id');
+            return res.status(400).send({ message: 'Missing name id', status: 400 });
         const name = req.params.name;
         let obj = {};
         if (req.body.name)
@@ -136,19 +174,19 @@ module.exports = (inv) => {
         if (Object.keys(obj).length == 0)
             return res.status(400).send('Missing inputs');
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'equipments', 'equipment_name', name)))
-            return res.status(400).send('Name does not exist');
+            return res.status(400).send({ message: "Equipment item does not exist", status: 400 });
         const { value } = yield (0, queries_1.getByParam)(inv.pool, 'equipments', 'equipment_name', name, "Equipment Item");
         const response = yield (0, queries_1.update)(inv.pool, 'equipments', value.id, obj, "Equipment Item");
         return res.status(response.status).send(response);
     }));
     inv.app.delete('/api/equipment/:name', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (req.params.name == undefined)
-            return res.status(400).send('Missing name id');
+            return res.status(400).send({ message: 'Missing name id', status: 400 });
         const name = req.params.name;
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'equipments', 'equipment_name', name)))
-            return res.status(400).send('Name does not exist');
+            return res.status(400).send({ message: "Equipment item does not exist", status: 400 });
         const { value } = yield (0, queries_1.getByParam)(inv.pool, 'equipments', 'equipment_name', name, "Equipment Item");
-        const response = yield (0, queries_1.del)(inv.pool, 'equipments', value.id, "Equipment Item");
+        const response = yield (0, queries_1.remove)(inv.pool, 'equipments', value.id, "Equipment Item");
         return res.status(response.status).send(response);
     }));
 };

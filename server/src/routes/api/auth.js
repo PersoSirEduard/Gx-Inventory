@@ -14,7 +14,7 @@ module.exports = (inv) => {
     inv.app.get('/api/auth/new', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             sendNewVerification();
-            return res.status(200).send('Verification email sent');
+            return res.status(200).send('Verification email sent.');
         }
         catch (err) {
             return res.status(500).send(String(err));

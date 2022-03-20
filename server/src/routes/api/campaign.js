@@ -15,9 +15,9 @@ module.exports = (inv) => {
     inv.app.post('/api/campaign', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { name, description } = req.body;
         if (!name)
-            return res.status(400).send('Missing name');
+            return res.status(400).send({ message: "Missing name", status: 400 });
         if (yield (0, queries_1.doesExist)(inv.pool, 'campaigns', 'campaign_name', name))
-            return res.status(400).send('Name already exists');
+            return res.status(400).send({ message: 'Name already exists', status: 400 });
         const response = yield (0, queries_1.create)(inv.pool, 'campaigns', {
             campaign_name: name,
             campaign_description: description
@@ -27,7 +27,7 @@ module.exports = (inv) => {
     inv.app.post('/api/campaign/all', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (req.body.amount != undefined)
             req.body.amount = parseInt(req.body.amount);
-        let filterObj = { filters: [], filterArg: "" };
+        let filterObj = { filters: [], preArgument: "" };
         if (req.body.filters != undefined) {
             for (let f = 0; f < req.body.filters.length; f++) {
                 let filter = req.body.filters[f];
@@ -44,33 +44,33 @@ module.exports = (inv) => {
                 }
             }
         }
-        const response = yield (0, queries_1.getAll)(inv.pool, 'campaigns', "Campaign", req.body.amount != undefined ? req.body.amount : 30, filterObj);
+        const response = yield (0, queries_1.query)(inv.pool, 'campaigns', "Campaign", req.body.amount != undefined ? req.body.amount : 30, filterObj);
         return res.status(response.status).send(response);
     }));
     inv.app.get('/api/campaign/:id', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.params.id)
-            return res.status(400).send('Missing id');
+            return res.status(400).send({ message: "Missing id", status: 400 });
         const id = parseInt(req.params.id);
         if (Number.isNaN(id))
-            return res.status(400).send('Invalid id');
+            return res.status(400).send({ message: "Invalid id", status: 400 });
         const response = yield (0, queries_1.getByParam)(inv.pool, 'campaigns', 'id', id, "Campaign");
         return res.status(response.status).send(response);
     }));
     inv.app.get('/api/campaign', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { name } = req.body;
         if (!name)
-            return res.status(400).send('Missing name');
+            return res.status(400).send({ message: "Missing name", status: 400 });
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'campaigns', 'campaign_name', name)))
-            return res.status(400).send('Name does not exist');
+            return res.status(400).send({ message: 'Name does not exist', status: 400 });
         const response = yield (0, queries_1.getByParam)(inv.pool, 'campaigns', 'campaign_name', name, "Campaign");
         return res.status(response.status).send(response);
     }));
     inv.app.put('/api/campaign/:id', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.params.id)
-            return res.status(400).send('Missing id');
+            return res.status(400).send({ message: "Missing id", status: 400 });
         const id = parseInt(req.params.id);
         if (Number.isNaN(id))
-            return res.status(400).send('Invalid id');
+            return res.status(400).send({ message: "Invalid id", status: 400 });
         const { name, description } = req.body;
         let obj = {};
         if (req.body.name != undefined)
@@ -78,29 +78,29 @@ module.exports = (inv) => {
         if (req.body.description != undefined)
             obj = Object.assign(obj, { campaign_description: description });
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'campaigns', 'id', id)))
-            return res.status(400).send('Id does not exist');
+            return res.status(400).send({ message: 'Id does not exist', status: 400 });
         const response = yield (0, queries_1.update)(inv.pool, 'campaigns', id, obj, "Campaign");
         return res.status(response.status).send(response);
     }));
     inv.app.delete('/api/campaign/:id', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.params.id)
-            return res.status(400).send('Missing id');
+            return res.status(400).send({ message: "Missing id", status: 400 });
         const id = parseInt(req.params.id);
         if (Number.isNaN(id))
-            return res.status(400).send('Invalid id');
+            return res.status(400).send({ message: "Invalid id", status: 400 });
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'campaigns', 'id', id)))
-            return res.status(400).send('Id does not exist');
-        const response = yield (0, queries_1.del)(inv.pool, 'campaigns', id, "Campaign");
+            return res.status(400).send({ message: 'Id does not exist', status: 400 });
+        const response = yield (0, queries_1.remove)(inv.pool, 'campaigns', id, "Campaign");
         return res.status(response.status).send(response);
     }));
     inv.app.delete('/api/campaign', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { name } = req.body;
         if (!name)
-            return res.status(400).send('Missing name');
+            return res.status(400).send({ message: "Missing name", status: 400 });
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'campaigns', 'campaign_name', name)))
-            return res.status(400).send('Name does not exist');
+            return res.status(400).send({ message: 'Name does not exist', status: 400 });
         const { value } = yield (0, queries_1.getByParam)(inv.pool, 'campaigns', 'campaign_name', name, "Campaign");
-        const response = yield (0, queries_1.del)(inv.pool, 'campaigns', value.id, "Campaign");
+        const response = yield (0, queries_1.remove)(inv.pool, 'campaigns', value.id, "Campaign");
         return res.status(response.status).send(response);
     }));
 };
