@@ -1,5 +1,14 @@
 <div class="wrapper">
     <div class="panel scrollbar-style">
+        <h2>Version 1.2.0</h2>
+        <ul>
+            <li>Added a visible item counter.</li>
+            <li>Added a 'modified_at' property that can only be viewed, for the moment, by downloading the database.</li>
+            <li>Optimized the backend server and database.</li>
+            <li>Added a download database feature to export results in CSV files.</li>
+            <li>Fixed the bug where items would duplicate from one page to another.</li>
+        </ul> 
+        <div class="separator"></div>
         <h2>Version 1.1.5</h2>
         <ul>
             <li>Added brand field property for equipments.</li>
