@@ -1,5 +1,13 @@
 <div class="wrapper">
     <div class="panel scrollbar-style">
+        <h2>Version 1.2.1</h2>
+        <ul>
+            <li>Added new popup functionalities. When deleting or updating an item, a prompt message will first appear to confirm the alteration.</li>
+            <li>Fixed the bug where new searches would glitch the displayed page if the new search page count was smaller than the previous search page count.</li>
+            <li>Fixed popup error message format. It should be friendlier now.</li>
+            <li>Improved general application stability.</li>
+        </ul> 
+        <div class="separator"></div>
         <h2>Version 1.2.0</h2>
         <ul>
             <li>Added a visible item counter.</li>

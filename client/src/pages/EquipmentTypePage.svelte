@@ -9,7 +9,7 @@
     import DetailForm from '../components/DetailForm.svelte';
     import PopupForm from '../components/PopupForm.svelte';
     import { onMount } from 'svelte';
-    import { genId, api } from '../helpers/utils.js';
+    import { genId, api, attemptJsonParse } from '../helpers/utils.js';
 
 
     // Global variables
@@ -20,18 +20,32 @@
     let currentPage = 1;
     let totalPages = 1;
 
-    // Global error variables
+    // Popup box variables
+    // Invoked using showError()
     let error = false;
     let errorTitle = 'Error';
     let errorMessage = '';
-    let onEndError = () => {};
+    let hasCancelBtn = false;
+    let onCancelError = () => {};
+    let onOkError = () => {};
 
-    const showError = (msg, title, onEnd = () => {}) => {
+    /**
+     * Show an error popup box
+     * @param msg : String - The message to display
+     * @param title : String - The title of the popup box
+     * @param onEnd : Function - The function to call when the popup box is closed
+     */
+    const showError = (msg, title, onCancel = () => {}, onOk = () => {}, hasCancel = false) => {
         errorMessage = msg;
         errorTitle = title;
-        onEndError = () => {
+        hasCancelBtn = hasCancel;
+        onCancelError = () => {
             error = false;
-            onEnd();
+            onCancel();
+        }
+        onOkError = () => {
+            error = false;
+            onOk();
         }
         error = true;
     }
@@ -50,6 +64,7 @@
     // Property panel
     // Seach panel
     const onClickSearch = async () => {
+        currentPage = 1;
         await reload();
     };
 
@@ -69,7 +84,7 @@
         [{type: "richtext", label: "Description", value: "", name: "description"}]
     ];
 
-    const onUpdate = async (e) => {
+    const onClickUpdate = async (e) => {
         
         try {
 
@@ -78,8 +93,8 @@
                 description: e.detail.description
             });
             
-        } catch (e) {
-            showError(e.message, 'Error');
+        } catch (err) {
+            showError(attemptJsonParse(err.message, "message"), 'Error');
         }
 
         // Reload list
@@ -87,13 +102,13 @@
 
     };
 
-    const onDelete = async (e) => {
+    const onClickDelete = async (e) => {
         try {
             const response = await api('DELETE', `equipment_type/${selectedItem.id}`);
 
             await reload();
-        } catch (e) {
-            showError(e.message, 'Error');
+        } catch (err) {
+            showError(attemptJsonParse(err.message, "message"), 'Error');
         }
     };
 
@@ -138,7 +153,7 @@
             // Reload list
             await reload();
         } catch (err) {
-            showError(err.message, 'Error');
+            showError(attemptJsonParse(err.message, "message"), 'Error');
         }
     }
 
@@ -168,7 +183,7 @@
             }
 
         } catch (err) {
-            showError(err.message, 'Error');
+            showError(attemptJsonParse(err.message, "message"), 'Error');
         }
 
     }
@@ -183,7 +198,7 @@
 <ScannerListener on:onScan={onScan}/>
 
 {#if error}
-        <Popup title={errorTitle} message={errorMessage} bind:visible={error} okButton={true} on:onOk={onEndError} on:onCancel={onEndError}/>
+        <Popup title={errorTitle} message={errorMessage} bind:visible={error} okButton={true} cancelButton={hasCancelBtn} on:onOk={onOkError} on:onCancel={onCancelError}/>
 {/if}
 
 {#if newItemWindow}
@@ -204,7 +219,7 @@
     </div>
 
     <Header title="Properties" icon="assets/params-icon.svg" />
-    <DetailForm {selectedItem} structure={selectedItemStructure} on:onUpdate={onUpdate} on:onDelete={onDelete}/>
+    <DetailForm {selectedItem} structure={selectedItemStructure} on:onUpdate={(e) => {showError("Update this equipment type?", "Equipment Type Update", () => {}, () => {onClickUpdate(e)}, true)}} on:onDelete={(e) => {showError("Delete this equipment type permanently? (Associated items to this type must be unassigned first)", "Equipment Type Deletion", () => {}, () => {onClickDelete(e)}, true)}}/>
     <button class="btn btn-add-item" style="--btn-color: green; border-width: 3px; font-size: large;" on:click={() => newItemWindow = true}><span style="font-weight:bold;">+</span> Add New Item</button>
 
 </PropertyPanel>

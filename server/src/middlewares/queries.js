@@ -143,7 +143,7 @@ function create(pool, table, inputs, subject) {
     return __awaiter(this, void 0, void 0, function* () {
         const availableIndex = yield findFirstDeleted(pool, table, subject);
         return new Promise((resolve, _) => {
-            inputs = Object.assign(inputs, { modified_at: new Date() });
+            inputs = Object.assign(inputs, { modified_at: 'NOW()' });
             if (availableIndex.value != undefined && availableIndex.value != null) {
                 var objs = "";
                 Object.entries(inputs).forEach(([key, value]) => {
@@ -190,7 +190,7 @@ exports.create = create;
 function update(pool, table, id, inputs, subject) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, _) => {
-            inputs = Object.assign(inputs, { modified_at: new Date() });
+            inputs = Object.assign(inputs, { modified_at: 'NOW()' });
             var objs = "";
             Object.entries(inputs).forEach(([key, value]) => {
                 objs += `${key}='${value}', `;

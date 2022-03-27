@@ -238,7 +238,7 @@ export async function create(pool: Pool, table: string, inputs: Object, subject:
     return new Promise((resolve, _) => {
 
         // Update time
-        inputs = Object.assign(inputs, {modified_at: new Date()});
+        inputs = Object.assign(inputs, {modified_at: 'NOW()'});
 
         // First find an item labeled as deleted to replace it
         // Check to see if an available index exists and update it if it does
@@ -306,7 +306,7 @@ export async function update(pool: Pool, table: string, id: number, inputs: Obje
     return new Promise((resolve, _) => {
 
         // Update time
-        inputs = Object.assign(inputs, {modified_at: new Date()});
+        inputs = Object.assign(inputs, {modified_at: 'NOW()'});
 
         // Generate list of values to update
         var objs = "";
@@ -316,6 +316,7 @@ export async function update(pool: Pool, table: string, id: number, inputs: Obje
 
         objs = objs.substring(0, objs.length - 2);
 
+        // console.log(`UPDATE ${table} SET ${objs} WHERE id=${id} RETURNING *`)
         pool.query(`UPDATE ${table} SET ${objs} WHERE id=${id} RETURNING *`, (err : any, result : any) => {
 
             // Check for errors

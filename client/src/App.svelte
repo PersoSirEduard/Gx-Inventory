@@ -7,11 +7,15 @@
     import CampaignPage from './pages/CampaignPage.svelte';
     import ChangelogPage from './pages/ChangelogPage.svelte';
 
+    // Tab labels to be displayed
     let items = ["Equipment", "Equipment Type", "Campaign", "Changelog"];
+    // Current page
     let activeItem = "Equipment";
 
+    // Event handler for changing the active tab
     const tabChange = (e) => activeItem = e.detail;
 
+    // Event handler for logging out
     const onLogout = (e) => {
 
         // Remove the key from localStorage and refresh the page
@@ -21,7 +25,7 @@
 
 </script>
 
-
+<!-- Browser tab information -->
 <svelte:head>
 	<title>Gx-Inventory</title>
 	<html lang="en" />

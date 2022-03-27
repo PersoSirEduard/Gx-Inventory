@@ -53,14 +53,14 @@
             {#if !column.onlyif || column.onlyif.includes(selectedItem["type"])}
             <div>
 
-                <label for={column.name}>{column.label}:</label>
-
                 <!-- Input box -->
                 {#if column.type === "text"}
+                    <label for={column.name}>{column.label}:</label>
                     <InputBox id={column.name} bind:this={output[column.name]} value={String(selectedItem[column.name])} width="100%"/>
 
                 <!-- Combo box array -->
                 {:else if column.type === "select"}
+                    <label for={column.name}>{column.label}:</label>
                     <select id={column.name} bind:this={output[column.name]} style="margin: 8px 0; width: 100%;" value={String(selectedItem[column.name])}>
                         {#each column.values as val}
                             <option value={String(val)}>{val}</option>
@@ -69,6 +69,7 @@
 
                 <!-- Combo box obj -->
                 {:else if column.type === "select-obj"}
+                    <label for={column.name}>{column.label}:</label>
                     <select id={column.name} bind:this={output[column.name]} style="margin: 8px 0; width: 100%;" value={String(selectedItem[column.name])}>
                         {#each Object.entries(column.values) as [key, val]}
                             <option value={String(key)}>{val}</option>
@@ -77,7 +78,11 @@
 
                 <!-- Rich text box -->
                 {:else if column.type === "richtext"}
+                    <label for={column.name}>{column.label}:</label>
                     <RichInputBox id={column.name} bind:this={output[column.name]} value={String(selectedItem[column.name])} height="110px"/>
+
+                {:else if column.type === "label"}
+                    <span id={column.name} bind:this={output[column.name]}>{column.label + String(selectedItem[column.name])}</span>
                 {/if}
             </div>
             {/if}

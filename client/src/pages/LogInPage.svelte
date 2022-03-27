@@ -3,11 +3,19 @@
     import InputBox from '../components/InputBox.svelte';
     import { api } from '../helpers/utils.js';
 
+    // Popup box variables
+    // Invoked using showError()
     let error = false;
     let errorMessage = 'Error';
     let errorTitle = '';
     let onEndError = () => {};
 
+    /**
+     * Show an error popup box
+     * @param msg : String - The message to display
+     * @param title : String - The title of the popup box
+     * @param onEnd : Function - The function to call when the popup box is closed
+     */
     const showError = (msg, title, onEnd = () => {}) => {
         error = true;
         errorMessage = msg;
@@ -18,15 +26,21 @@
         }
     }
 
+    // Temporary password variable
     let inventoryKey = '';
-
+    // Event handler for changing the stored password
     const onLogIn = (e) => {
+        // Access local storage, change the password and refresh the page
         localStorage.setItem('key', inventoryKey);
         location.reload();
     };
 
+    // Event handler for creating a new password when the client clicks on the "Request for a new key by email" button
     const onNewAuth = async (e) => {
         try {
+
+            // Request new key by email
+            // Calls the api/auth/new endpoint
             const response = await api('GET', 'auth/new');
             showError("A new key has been generated. Please verify your email inbox.", "Success", () => { location.reload();});
 
@@ -38,20 +52,28 @@
 </script>
 
 <div class="window">
+
+    <!-- Generate title -->
     <div class="title">
         {#each "GX-INVENTORY" as char}
             <span>{char}</span>
         {/each}
     </div>
+
+    <!-- Log in box -->
     <label style="margin-top: 35px; font-size: large;" for="loginBox">Inventory key:</label>
     <InputBox id="loginBox" bind:value={inventoryKey} width="100%" />
     <button on:click={onLogIn} style="margin-top: 15px;">Log in the inventory</button>
 
+    <!-- New password box -->
     <div class="separator"><span>Or</span></div>
     <button on:click={onNewAuth}>Request for a new key by email</button>
+
+    <!-- Contact label -->
     <p style="font-size: small; text-align: center; color: #ccc; margin-top: auto;">To report any issue, please contact Eduard Anton at eanton@gexel.com</p>
 </div>
 
+<!-- Error display -->
 {#if error}
     <Popup title={errorTitle} message={errorMessage} okButton={true} on:onOk={onEndError}/>
 {/if}

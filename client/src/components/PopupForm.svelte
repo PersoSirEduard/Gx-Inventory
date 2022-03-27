@@ -56,7 +56,7 @@
 <svelte:window on:load={onLoad} bind:innerHeight={screenHeight}/>
 
 <div class="background" on:click={() => visible = false}></div>
-<div class="window" bind:this={window}>
+<div class="window srollbar-style" bind:this={window}>
 
     <!-- Close button -->
     <button class="exitBtn" on:click={() => visible = false}>X</button>
@@ -132,6 +132,7 @@
     }
     .window {
         position: absolute;
+        z-index: 3;
         width: 25%;
         min-height: 15%;
         background-color: white;
@@ -194,5 +195,15 @@
     .controlBtn:hover {
         background-color: var(--btn-color);
         color: white;
+    }
+    .srollbar-style::-webkit-scrollbar {
+        background-color: lightgray;
+        border-radius: 10px;
+        width: 10px;
+        height: 20px;;
+    }
+    .srollbar-style::-webkit-scrollbar-thumb {
+        background-color: darkgrey;
+        border-radius: 10px;
     }
 </style>
