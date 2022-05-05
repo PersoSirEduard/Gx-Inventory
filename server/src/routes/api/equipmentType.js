@@ -13,14 +13,20 @@ const queries_1 = require("../../middlewares/queries");
 const { auth } = require('../../middlewares/authentication.js');
 module.exports = (inv) => {
     inv.app.post('/api/equipment_type', auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        const { name, description } = req.body;
+        var { name, description, hasSerialNumber, hasModel, hasBrand } = req.body;
         if (!name)
             return res.status(400).send({ message: "Missing name", status: 400 });
         if (yield (0, queries_1.doesExist)(inv.pool, 'equipment_types', 'equipment_type_name', name))
             return res.status(400).send({ message: 'Name already exists', status: 400 });
+        hasSerialNumber = hasSerialNumber == "true" ? "TRUE" : "FALSE";
+        hasModel = hasModel == "true" ? "TRUE" : "FALSE";
+        hasBrand = hasBrand == "true" ? "TRUE" : "FALSE";
         const response = yield (0, queries_1.create)(inv.pool, 'equipment_types', {
             equipment_type_name: name,
-            equipment_type_description: description
+            equipment_type_description: description,
+            has_serial_number: hasSerialNumber,
+            has_model: hasModel,
+            has_brand: hasBrand
         }, "Equipment Type");
         return res.status(response.status).send(response);
     }));
@@ -71,12 +77,18 @@ module.exports = (inv) => {
         const id = parseInt(req.params.id);
         if (Number.isNaN(id))
             return res.status(400).send({ message: "Invalid id", status: 400 });
-        const { name, description } = req.body;
+        const { name, description, hasSerialNumber, hasBrand, hasModel } = req.body;
         let obj = {};
         if (req.body.name != undefined)
             obj = Object.assign(obj, { equipment_type_name: name });
         if (req.body.description != undefined)
             obj = Object.assign(obj, { equipment_type_description: description });
+        if (req.body.hasSerialNumber != undefined)
+            obj = Object.assign(obj, { has_serial_number: hasSerialNumber });
+        if (req.body.hasBrand != undefined)
+            obj = Object.assign(obj, { has_brand: hasBrand });
+        if (req.body.hasModel != undefined)
+            obj = Object.assign(obj, { has_model: hasModel });
         if (!(yield (0, queries_1.doesExist)(inv.pool, 'equipment_types', 'id', id)))
             return res.status(400).send({ message: 'Id does not exist', status: 400 });
         const response = yield (0, queries_1.update)(inv.pool, 'equipment_types', id, obj, "Equipment Type");

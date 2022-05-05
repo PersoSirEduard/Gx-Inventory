@@ -9,18 +9,26 @@ module.exports = (inv : Inventory) => {
     // Create new equipment type
     inv.app.post('/api/equipment_type', auth, async (req : Request, res: Response) => {
 
-        const { name, description } = req.body;
+        var { name, description, hasSerialNumber, hasModel, hasBrand } = req.body;
 
         // Check if the name is provided
         if (!name) return res.status(400).send({ message: "Missing name", status: 400 });
 
         // Check if the name already exists
         if (await doesExist(inv.pool, 'equipment_types', 'equipment_type_name', name)) return res.status(400).send({ message: 'Name already exists', status: 400 });
+
+        // Default values for the boolean fields
+        hasSerialNumber = hasSerialNumber == "true" ? "TRUE" : "FALSE";
+        hasModel = hasModel == "true" ? "TRUE" : "FALSE";
+        hasBrand = hasBrand == "true" ? "TRUE" : "FALSE";
         
         // Create new equipment type
         const response = await create(inv.pool, 'equipment_types', {
             equipment_type_name: name,
-            equipment_type_description: description
+            equipment_type_description: description,
+            has_serial_number: hasSerialNumber,
+            has_model: hasModel,
+            has_brand: hasBrand
         }, "Equipment Type");
 
         return res.status(response.status).send(response);
@@ -103,11 +111,14 @@ module.exports = (inv : Inventory) => {
 
         if (Number.isNaN(id)) return res.status(400).send({ message: "Invalid id", status: 400 });
 
-        const { name, description } = req.body;
+        const { name, description, hasSerialNumber, hasBrand, hasModel} = req.body;
 
         let obj = {}
         if (req.body.name != undefined) obj = Object.assign(obj, {equipment_type_name: name});
         if (req.body.description != undefined) obj = Object.assign(obj, {equipment_type_description: description});
+        if (req.body.hasSerialNumber != undefined) obj = Object.assign(obj, {has_serial_number: hasSerialNumber});
+        if (req.body.hasBrand != undefined) obj = Object.assign(obj, {has_brand: hasBrand});
+        if (req.body.hasModel != undefined) obj = Object.assign(obj, {has_model: hasModel});
 
         // Check if the id exists
         if (!await doesExist(inv.pool, 'equipment_types', 'id', id)) return res.status(400).send({ message: 'Id does not exist', status: 400 });

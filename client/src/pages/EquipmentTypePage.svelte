@@ -13,7 +13,7 @@
 
 
     // Global variables
-    let properties = ["id", "name", "description"]
+    let properties = ["id", "name", "description", "hasSerialNumber", "hasBrand", "hasModel"]
     let filters = []
     let items = []
     let selectedItem = null;
@@ -81,6 +81,8 @@
     // Properties panel
     $: selectedItemStructure = [
         [{type: "text", label: "Name", value: "", name: "name"}],
+        [{type: "select", label: "Has Serial Number", value: "false", values: ["false", "true"], name: "hasSerialNumber"}],
+        [{type: "select", label: "Has Brand", value: "false", values: ["false", "true"], name: "hasBrand"}, {type: "select", label: "Has Model", value: "false", values: ["false", "true"], name: "hasModel"}],
         [{type: "richtext", label: "Description", value: "", name: "description"}]
     ];
 
@@ -90,7 +92,10 @@
 
             const equipment = await api('PUT', `equipment_type/${selectedItem.id}`, {
                 name: e.detail.name,
-                description: e.detail.description
+                description: e.detail.description,
+                hasSerialNumber: e.detail.hasSerialNumber,
+                hasBrand: e.detail.hasBrand,
+                hasModel: e.detail.hasModel
             });
             
         } catch (err) {
@@ -115,6 +120,8 @@
     // Add item panel
     $: newItemStructure = [
         [{type: "text", label: "Name", value: "", name: "name"}],
+        [{type: "select", label: "Has Serial Number", value: "false", values: ["false", "true"], name: "hasSerialNumber"}],
+        [{type: "select", label: "Has Brand", value: "false", values: ["false", "true"], name: "hasBrand"}, {type: "select", label: "Has Model", value: "false", values: ["false", "true"], name: "hasModel"}],
         [{type: "richtext", label: "Description", value: "", name: "description"}]
     ];
     let newItemWindow = false;
@@ -129,7 +136,13 @@
             
             // Found equipment already in list
             if (equipmentType != undefined && equipmentType.value != undefined) {
-                selectedItem = {id: equipmentType.value.id, name: equipmentType.value.equipment_type_name, description: equipmentType.value.equipment_type_description}
+                selectedItem = {id: equipmentType.value.id, 
+                    name: equipmentType.value.equipment_type_name, 
+                    description: equipmentType.value.equipment_type_description, 
+                    hasSerialNumber: equipmentTypes.value[i].has_serial_number,
+                    hasBrand: equipmentTypes.value[i].has_brand,
+                    hasModel: equipmentTypes.value[i].has_model
+                };
             }
             else {
                 // Equipment not found. Create new item
@@ -179,7 +192,13 @@
             // Update items list
             items = [];
             for (let i = 0; i < equipmentTypes.value.length; i++) {
-                items.push({id: equipmentTypes.value[i].id, name: equipmentTypes.value[i].equipment_type_name, description: equipmentTypes.value[i].equipment_type_description});
+                items.push({id: equipmentTypes.value[i].id, 
+                    name: equipmentTypes.value[i].equipment_type_name, 
+                    description: equipmentTypes.value[i].equipment_type_description, 
+                    hasSerialNumber: equipmentTypes.value[i].has_serial_number,
+                    hasBrand: equipmentTypes.value[i].has_brand,
+                    hasModel: equipmentTypes.value[i].has_model,
+                });
             }
 
         } catch (err) {

@@ -22,9 +22,9 @@
 
 </script>
 
-<div class="background" on:click={() => visible = false}></div>
+<div class="background" on:click={pressedCancel}></div>
 <div class="window">
-    <button class="exitBtn" on:click={() => visible = false}>X</button>
+    <button class="exitBtn" on:click={pressedCancel}>X</button>
     <p style="font-size: x-large">{title}</p>
     <p style="font-size: large">{message}</p>
     <div class="buttons">
@@ -48,6 +48,7 @@
         background-color: white;
         border-radius: 10px 10px 10px 10px;
         padding: 10px;
+        z-index: 4;
         animation: zoomin 0.7s;
     }
     .background {
@@ -59,6 +60,7 @@
         left: 0;
         opacity: 0.3;
         animation: fadein 0.7s;
+        z-index: 3;
     }
 
     @keyframes fadein {
