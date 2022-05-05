@@ -132,7 +132,7 @@
     }
     .window {
         position: absolute;
-        z-index: 3;
+        z-index: 4;
         width: 25%;
         min-height: 15%;
         background-color: white;
@@ -150,6 +150,7 @@
         left: 0;
         opacity: 0.3;
         animation: fadein 0.7s;
+        z-index: 2;
     }
 
     @keyframes fadein {

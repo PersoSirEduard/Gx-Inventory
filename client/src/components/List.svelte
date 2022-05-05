@@ -81,6 +81,9 @@
 
     th {
         border-bottom: 1px solid black;
+        position: sticky;
+        top: 0;
+        background-color: white;
     }
 
     tr:nth-child(even) {

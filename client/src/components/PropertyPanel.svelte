@@ -15,6 +15,7 @@
         box-shadow: 5px 5px 15px 5px rgba(0,0,0,0.2);
         border-radius: 10px 10px 10px 10px;
         width: 20%;
+        min-width: 320px;
         height: auto;
         margin-right: 40px;
         margin-top: 10px;

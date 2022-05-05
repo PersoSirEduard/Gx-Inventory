@@ -1,5 +1,13 @@
 <div class="wrapper">
     <div class="panel scrollbar-style">
+        <h2>Version 1.3.0</h2>
+        <ul>
+            <li>Added configurable properties (has brand, has model, and has serial number) to equipment types.</li>
+            <li>Enhanced the general resize layout of the property and search panels.</li>
+            <li>Change to the list header that will now remain visible (sticked to the top) at any time.</li>
+            <li>Added a new login page design.</li>
+        </ul> 
+        <div class="separator"></div>
         <h2>Version 1.2.1</h2>
         <ul>
             <li>Added new popup functionalities. When deleting or updating an item, a prompt message will first appear to confirm the alteration.</li>

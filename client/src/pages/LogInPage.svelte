@@ -54,11 +54,12 @@
 <div class="window">
 
     <!-- Generate title -->
-    <div class="title">
-        {#each "GX-INVENTORY" as char}
-            <span>{char}</span>
-        {/each}
+    <div style="display: flex; align-items: center; justify-content: center; margin-top: 10px;">
+        <div class="title">
+            GX-INVENTORY
+        </div>
     </div>
+    
 
     <!-- Log in box -->
     <label style="margin-top: 35px; font-size: large;" for="loginBox">Inventory key:</label>
@@ -73,6 +74,9 @@
     <p style="font-size: small; text-align: center; color: #ccc; margin-top: auto;">To report any issue, please contact Eduard Anton at eanton@gexel.com</p>
 </div>
 
+<!-- Background image top corner -->
+<img class="background-img" src="assets/squares.png" alt="" draggable="false">
+
 <!-- Error display -->
 {#if error}
     <Popup title={errorTitle} message={errorMessage} okButton={true} on:onOk={onEndError}/>
@@ -80,31 +84,28 @@
 
 <style>
     .title {
-        display: flex;
-        flex-direction: row;
-        text-align: center;
-        height: 40px;
-        width: 100%;
-        margin-top: 10px;
-        transform: rotateX(35deg), translateY(-50%);
+        background: 50% 100% / 50% 50% no-repeat
+        radial-gradient(ellipse at bottom, rgb(112, 112, 112), transparent, transparent);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-size: 40px;
+        font-family: 'Consolas';
+        animation: reveal 3000ms ease-in-out forwards 200ms, glow 2500ms linear infinite 2000ms;
+        user-select: none;
     }
-    .title span {
-        display: inline-block;
-        background-color: #fff;
-        padding-top: 10px;
-        width: 35px;
-        height: 40px;
-        border: 1px solid rgba(0, 0, 0, 0.1);;
-        transition: transform .3s ease-in-out, color .3s ease-in-out, background-color .3s ease-in-out;
-        box-shadow: 0 40px 50px rgba(0,0,0,0.1);
-        
-    }
-    .title span:nth-child(odd){
-        transform: skewY(15deg);
-    }
-    .title span:nth-child(even){
-        transform: skewY(-15deg);      
-        background-color: #f9f9f9;
+    @keyframes reveal {
+            80% {
+                letter-spacing: 8px;
+            }
+            100% {
+                background-size: 300% 300%;
+            }
+        }
+    @keyframes glow {
+        40% {
+            text-shadow: 0 0 8px rgb(112, 112, 112);
+        }
     }
     .window {
         position: absolute;
@@ -118,6 +119,7 @@
         margin: auto;
         display: flex;
         flex-direction: column;
+        z-index: 2;
     }
     .separator {
         width: 100%; 
@@ -142,6 +144,16 @@
     }
     button:hover {
         background-color: #ccc;
+    }
+
+    .background-img {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        z-index: 0;
+        user-select: none;
+        pointer-events: none;
     }
 
 </style>

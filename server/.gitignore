@@ -2,4 +2,4 @@ node_modules/
 .env
 *.js
 *.js.map
-*.sql
+GxInventory_db.sql

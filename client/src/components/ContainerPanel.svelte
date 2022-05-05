@@ -17,7 +17,7 @@
         margin-left: 40px;
         margin-bottom: 110px;
         padding: 15px;
-        overflow-x: hidden;
+        overflow: auto;
     }
 
     .srollbar-style::-webkit-scrollbar {

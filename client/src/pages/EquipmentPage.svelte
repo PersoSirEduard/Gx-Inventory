@@ -166,11 +166,11 @@
     // - type : String - The type of input for the property (text, select, select-obj, richtext)
     // - onlyif : String - Conditions to display the property
     $: newItemStructure = [
-        [{type: "text", label: "Name", value: "", name: "name"}, {type: "select-obj", label: "Type", value: Object.keys(types)[0], values: types, name: "type"}],
+        [{type: "text", label: "Name", value: "", name: "name"}, {type: "select-obj", label: "Type", value: Object.keys(types)[0], values: (() => {var map = {}; for (let key in types) {map[key] = types[key].name}; return map})(), name: "type"}],
         [{type: "text", label: "Location", value: "", name: "location"}, {type: "select", label: "Status", value: "In Stock", values: ["In Stock", "In Use", "Unknown", "Not Returned - Formal Notice"], name: "status"}],
         [{type: "text", label: "Agent Name", value: "", name: "agent"}, {type: "select-obj", label: "Campaign", value: Object.keys(campaigns)[0], values: campaigns, name: "campaign"}],
-        [{type: "text", label: "Brand", value: "", name: "brand"}, {type: "text", label: "Model", value: "", name: "model"}],
-        [{type: "text", label: "Serial Number", value: "", name: "serial_number", onlyif: Object.entries(types).filter((el) => el[1] == "Laptop" || el[1] == "PC").map((el) => parseInt(el[0])) }],
+        [{type: "text", label: "Brand", value: "", name: "brand", onlyif: Object.entries(types).filter((el) => el[1].hasBrand).map((el) => parseInt(el[0]))}, {type: "text", label: "Model", value: "", name: "model", onlyif: Object.entries(types).filter((el) => el[1].hasModel).map((el) => parseInt(el[0]))}],
+        [{type: "text", label: "Serial Number", value: "", name: "serial_number", onlyif: Object.entries(types).filter((el) => el[1].hasSerialNumber).map((el) => parseInt(el[0])) }],
         [{type: "richtext", label: "Description", value: "", name: "description"}],
         // [{type: "label", label: "Modified at: ", name: "modified_at"}]
     ];
@@ -250,7 +250,12 @@
             // Update types dictionnary
             types = {}
             for (let i = 0; i < equipment_types.value.length; i++) {
-                types[equipment_types.value[i].id] = equipment_types.value[i].equipment_type_name;
+                types[equipment_types.value[i].id] = {
+                    name: equipment_types.value[i].equipment_type_name,
+                    hasSerialNumber: equipment_types.value[i].has_serial_number,
+                    hasBrand: equipment_types.value[i].has_brand,
+                    hasModel: equipment_types.value[i].has_model,
+                }
             }
 
         } catch (err) {
@@ -298,7 +303,7 @@
                             brand: equipments.value[i].equipment_brand,
                             agent: equipments.value[i].equipment_agent,
                             serial_number: equipments.value[i].equipment_serial_number,
-                            modified_at: new Date(equipments.value[0].modified_at).toLocaleString()
+                            modified_at: new Date(equipments.value[0].modified_at).toLocaleString(),
                         });
             }
 
@@ -328,7 +333,7 @@
 {/if}
 
 <ContainerPanel>
-    <List {properties} {items} {selectedItem} {types} {campaigns} {totalPages} bind:currentPage={currentPage} on:onItemSelected={onItemSelected} on:onNextPage={onNextPage}/>
+    <List {properties} {items} {selectedItem} types={ (() => {var map = {}; for (let key in types) {map[key] = types[key].name}; return map})() } {campaigns} {totalPages} bind:currentPage={currentPage} on:onItemSelected={onItemSelected} on:onNextPage={onNextPage}/>
 </ContainerPanel>
 
 <PropertyPanel>
